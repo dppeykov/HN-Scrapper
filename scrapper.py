@@ -1,16 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 import pprint
+import sys
 
-res = requests.get('https://news.ycombinator.com/')
+try:
+    pages = int(sys.argv[1])
+except:
+    print(
+        f'\n The first argument needs to be an integer value of 1 or bigger! The program will exit now! \n')
 
-soup = BeautifulSoup(res.text, 'html.parser')
 
-links = soup.select('.storylink')
-subtext = soup.select('.subtext')
-next_link = soup.select('.morelink')[0].get('href')
-
-print(next_link)
+def collect_raw_data(url):
+    res = requests.get(url)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    return soup
 
 
 def sort_stories_by_votes(hn_list):
@@ -29,5 +32,10 @@ def create_custom_hn(links, subtext):
     return sort_stories_by_votes(hn)
 
 
-# pprint.pprint(create_custom_hn(links, subtext))
-create_custom_hn(links, subtext)
+for page in range(1, pages+1):
+    print(f'Page {page}: \n')
+    raw_data = collect_raw_data(f'https://news.ycombinator.com/news?p={page}')
+    links = raw_data.select('.storylink')
+    subtext = raw_data.select('.subtext')
+
+    pprint.pprint(create_custom_hn(links, subtext))
